@@ -55,8 +55,8 @@ train_cfg = dict(
 test_cfg = dict(
     nms_pre=1000,
     min_bbox_size=0,
-    score_thr=0.05,
-    nms=dict(type='nms', iou_threshold=0.5),
+    score_thr=0.3,
+    nms=dict(type='nms', iou_threshold=0.3),
     max_per_img=100)
 
 dataset_type = 'ZaloDataset'
@@ -90,7 +90,7 @@ test_pipeline = [
 ]
 data = dict(
     workers_per_gpu=1,
-    imgs_per_gpu=2,
+    imgs_per_gpu=1,
     train=dict(
         type=dataset_type,
         ann_file=data_root + 'train_traffic_sign_dataset.json',
@@ -109,7 +109,7 @@ data = dict(
 evaluation = dict(interval=12, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(
