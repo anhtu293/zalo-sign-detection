@@ -52,7 +52,6 @@ def main(args):
         file = img_files[idx]
         img = load_img(os.path.join(data_dir, file))
         results = inference_detector(model, img)
-        results = nms_interclass(results)
         idx_img = int(file.split('.')[0])
         for idx_cls, res in enumerate(results):
             if res.shape[0] == 0:

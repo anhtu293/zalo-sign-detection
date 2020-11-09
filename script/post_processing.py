@@ -23,7 +23,7 @@ def nms_interclass(result):
         if res.shape[0] == 0:
             continue
         for i in range(res.shape[0]):
-            bbox = res[i,:].tolist()
+            bbox = res[i, :].tolist()
             bbox.append(cls)
             bboxes.append(bbox)
     keep = [True for _ in range(len(bboxes))]
