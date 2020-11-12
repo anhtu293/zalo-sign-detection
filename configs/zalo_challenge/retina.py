@@ -29,7 +29,7 @@ model = dict(
             octave_base_scale=4,
             scales_per_octave=3,
             ratios=[1.0],
-            strides=[8, 16, 32, 64, 128]),
+            strides=[2, 4, 8, 16, 32]),
         bbox_coder=dict(
             type='DeltaXYWHBBoxCoder',
             target_means=[.0, .0, .0, .0],
@@ -66,8 +66,9 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
     dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='Resize', img_scale=(1622, 626), keep_ratio=True),
+    dict(type='Resize', img_scale=[(811, 313), (1622, 626)], keep_ratio=True),
     dict(type='PhotoMetricDistortion'),
+    # dict(type='RandomCenterCropPad', crop_size=(800, 400)),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
@@ -107,10 +108,10 @@ data = dict(
         ann_file=data_root + 'train_traffic_sign_dataset.json',
         img_prefix=data_root + 'images/',
         pipeline=test_pipeline))
-evaluation = dict(interval=12, metric='bbox')
+evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='Adam', lr=0.0025,  weight_decay=0.0001) # momentum=0.9,
 # batch_size/800
 optimizer_config = dict(grad_clip=None)
 # learning policy
@@ -119,8 +120,8 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=0.001,
-    step=[8, 11])
-total_epochs = 12
+    step=[8, 11, 20, 30, 40, 50])
+total_epochs = 100
 
 checkpoint_config = dict(interval=1)
 # yapf:disable
