@@ -43,7 +43,7 @@ model = dict(
             in_channels=256,
             fc_out_channels=1024,
             roi_feat_size=7,
-            num_classes=7,
+            num_classes=1,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
                 target_means=[0., 0., 0., 0.],
@@ -103,7 +103,7 @@ test_cfg = dict(
         nms_thr=0.7,
         min_bbox_size=0),
     rcnn=dict(
-        score_thr=0.3,
+        score_thr=0.05,
         nms=dict(type='nms', iou_threshold=0.3),
         max_per_img=100)
     # soft-nms is also supported for rcnn testing
@@ -145,20 +145,20 @@ data = dict(
     imgs_per_gpu=1,
     train=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_traffic_sign_dataset.json',
+        ann_file=data_root + 'new_ann.json',
         img_prefix=data_root + 'images/',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_traffic_sign_dataset.json',
+        ann_file=data_root + 'new_ann.json',
         img_prefix=data_root + 'images/',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'train_traffic_sign_dataset.json',
+        ann_file=data_root + 'new_ann.json',
         img_prefix=data_root + 'images/',
         pipeline=test_pipeline))
-evaluation = dict(interval=12, metric='bbox')
+evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
 optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
