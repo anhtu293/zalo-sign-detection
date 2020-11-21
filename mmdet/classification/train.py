@@ -11,6 +11,7 @@ import os
 
 
 def train(model, device, criterion, train_loader, optimizer, epoch):
+
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
@@ -25,10 +26,11 @@ def train(model, device, criterion, train_loader, optimizer, epoch):
                 100. * batch_idx / len(train_loader), loss.item()))
 
 def test(model, device, criterion, test_loader):
+
     model.eval()
     test_loss = 0
     correct = 0
-    conf_matrix = np.zeros((7,7)) # initialize confusion matrix
+    conf_matrix = np.zeros((8,8)) # initialize confusion matrix
     with torch.no_grad():
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
@@ -39,7 +41,7 @@ def test(model, device, criterion, test_loader):
             pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
             conf_matrix = conf_matrix + metrics.confusion_matrix(
-                          pred.cpu(), target.cpu(), labels=[0,1,2,3,4,5,6])
+                          pred.cpu(), target.cpu(), labels=[0,1,2,3,4,5,6,7])
         np.set_printoptions(precision=4, suppress=True)
         print(type(conf_matrix))
         print(conf_matrix)
@@ -50,12 +52,14 @@ def test(model, device, criterion, test_loader):
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
 
+
 def main():
+
     #gpu
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     #load data
-    dataset = SignDataset("../../../za_traffic_2020/signs/")
-    train_set, test_set = torch.utils.data.random_split(dataset, [10000, 1000])
+    dataset = SignDataset("../../../za_traffic_2020/traffic_train/images/", "../../../za_traffic_2020/traffic_train/train_traffic_sign_dataset.json")
+    train_set, test_set = torch.utils.data.random_split(dataset, [10000, 1010])
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=False)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False)
     #train
@@ -66,5 +70,7 @@ def main():
         train(net, device, criterion, train_loader, optimizer, epoch)
         test(net, device, criterion, test_loader)
 
+
 if __name__ == "__main__":
+    
     main()
