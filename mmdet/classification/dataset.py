@@ -21,7 +21,7 @@ class SignDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         img_id, bbox, category = self.annotations[index]
-        img = np.float32(cv2.imread(self.image_dir + str(img_id) + ".png", 0))
+        img = np.float32(cv2.imread(self.image_dir + str(img_id) + ".png"))
         x, y, w, h = bbox
         sign = img[y:y+h, x:x+w]
         sign_resized = cv2.resize(sign, (128, 128))
