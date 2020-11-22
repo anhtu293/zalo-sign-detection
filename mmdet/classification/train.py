@@ -59,15 +59,19 @@ def main():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     #load data
     dataset = SignDataset("../../../za_traffic_2020/traffic_train/images/", "../../../za_traffic_2020/traffic_train/train_traffic_sign_dataset.json")
-    train_set, test_set = torch.utils.data.random_split(dataset, [10000, 2500])
+    train_set, test_set = torch.utils.data.random_split(dataset, [11500, 1000])
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=False)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=32, shuffle=False)
     #train
     net = NetConv().to(device)
+    try:
+        net.load_state_dict(torch.load("model.pth"))
+    except:
+        pass
     criterion = nn.NLLLoss()
     optimizer = toptim.Adam(net.parameters(), lr=1e-3)
     path = "model.pth" 
-    for epoch in range(5):
+    for epoch in range(20):
         train(net, device, criterion, train_loader, optimizer, epoch)
         torch.save(net.state_dict(), path)
         test(net, device, criterion, test_loader)
