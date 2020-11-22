@@ -1,4 +1,5 @@
 import cv2
+import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -8,10 +9,19 @@ import mmcv
 import json
 import argparse
 from tqdm import tqdm
+from mmdet.classification.network import NetConv
 
 
 def init_model(config, checkpoint):
     model = init_detector(config, checkpoint, device='cuda:0')
+    return model
+
+
+def init_classifier(path):
+    device = torch.device("cuda")
+    model = NetConv()
+    model.load_state_dict(torch.load(path))
+    model.to(device)
     return model
 
 
@@ -21,10 +31,11 @@ def load_img(file):
 
 
 def argsparse():
-    argsparser = argparse.ArgumentParser()
-    argsparser.add_argument('config', help='path to config file')
-    argsparser.add_argument('checkpoint', help='path to checkpoint')
-    args = argsparser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config', help='path to config file')
+    parser.add_argument('checkpoint', help='path to checkpoint')
+    parser.add_argument('classifier', help='path to classifier checkpoint')
+    args = parser.parse_args()
     return args
 
 
@@ -43,19 +54,32 @@ def format_result(result, idx_img, idx_cls):
 
 
 def main(args):
-    model = init_model(args.config, args.checkpoint)
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    detector = init_model(args.config, args.checkpoint)
+    classifier = init_classifier(args.classifier)
     data_dir = '/workspace/zalo_sign_detection/za_traffic_2020/traffic_public_test/images'
     img_files = os.listdir(data_dir)
     final_result = []
     for idx in tqdm(range(len(img_files))):
         file = img_files[idx]
         img = load_img(os.path.join(data_dir, file))
-        results = inference_detector(model, img)
+        results = inference_detector(detector, img)
         idx_img = int(file.split('.')[0])
-        for idx_cls, res in enumerate(results):
+        for res in enumerate(results):
             if res.shape[0] == 0:
                 continue
             for i in range(res.shape[0]):
+                sign = img[int(res[i,1]):int(res[i,3]),
+                           int(res[i,0]):int(res[i,2])]
+                sign = cv2.cvtColor(sign, cv2.COLOR_BGR2GRAY)
+                sign = cv2.resize(sign, (128,128))
+                sign_tensor = torch.tensor(sign).to(device)
+                sign_tensor = sign_tensor.float().unsqueeze(0)
+                output_cls = classifier(sign_tensor)
+                idx_cls = output_cls.argmax(dim=1)
+                if idx_cls == 7:
+                    continue
+                idx_cls += 1
                 final_result.append(format_result(res[i, :].tolist(), idx_img, idx_cls))
 
     with open('result.json', 'w') as f:
