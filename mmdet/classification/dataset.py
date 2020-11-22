@@ -6,8 +6,7 @@ import numpy as np
 from random import randint
 import json
 
-ANNOTATION_GENERATED = 10
-
+ANNOTATION_GENERATED = 1500
 class SignDataset(torch.utils.data.Dataset):
 
 
@@ -29,11 +28,7 @@ class SignDataset(torch.utils.data.Dataset):
         sign_resized /= 255.
 
         return sign_resized, category 
-
-
-    @classmethod
-    def load_images(image_dir):
-        pass
+        
 
     @classmethod
     def interval_overlap(self, interval1, interval2):
@@ -99,7 +94,7 @@ class SignDataset(torch.utils.data.Dataset):
             sign_id = index
             image_id = sign["image_id"]
             bbox = sign["bbox"]
-            category = sign["category_id"]
+            category = sign["category_id"] - 1
             #save in final annotations
             final_annotations[index] = [image_id, bbox, category]
             #save bboxes for each image
