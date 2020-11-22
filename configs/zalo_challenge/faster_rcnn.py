@@ -23,7 +23,7 @@ model = dict(
             type='AnchorGenerator',
             scales=[4, 8],
             ratios=[1.0],
-            strides=[2, 4, 8, 16, 32]),
+            strides=[8, 16, 32, 64, 128]),
         bbox_coder=dict(
             type='DeltaXYWHBBoxCoder',
             target_means=[.0, .0, .0, .0],
@@ -117,7 +117,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True),
     dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='Resize', img_scale=(1622, 626), keep_ratio=True),
+    dict(type='Resize', img_scale=(1311, 313), keep_ratio=True),
     dict(type='PhotoMetricDistortion'),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(type='Normalize', **img_norm_cfg),
@@ -161,7 +161,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.00125, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(
@@ -169,7 +169,7 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=0.001,
-    step=[8, 12, 20, 30, 40])
+    step=[30, 40])
 total_epochs = 50
 
 checkpoint_config = dict(interval=1)
