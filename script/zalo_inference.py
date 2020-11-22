@@ -65,18 +65,19 @@ def main(args):
         img = load_img(os.path.join(data_dir, file))
         results = inference_detector(detector, img)
         idx_img = int(file.split('.')[0])
-        for res in enumerate(results):
+        for res in results:
             if res.shape[0] == 0:
                 continue
             for i in range(res.shape[0]):
                 sign = img[int(res[i,1]):int(res[i,3]),
                            int(res[i,0]):int(res[i,2])]
-                sign = cv2.cvtColor(sign, cv2.COLOR_BGR2GRAY)
-                sign = cv2.resize(sign, (128,128))
+                # sign = cv2.cvtColor(sign, cv2.COLOR_BGR2GRAY)
+                sign = cv2.resize(sign, (128,128))/255.
+                print(sign.shape())
                 sign_tensor = torch.tensor(sign).to(device)
                 sign_tensor = sign_tensor.float().unsqueeze(0)
                 output_cls = classifier(sign_tensor)
-                idx_cls = output_cls.argmax(dim=1)
+                idx_cls = int(output_cls.argmax(dim=1)[0])
                 if idx_cls == 7:
                     continue
                 idx_cls += 1
