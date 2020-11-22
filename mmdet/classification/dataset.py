@@ -143,7 +143,8 @@ class SignDataset(torch.utils.data.Dataset):
         while len(final_annotations) != original_len + generated_len:        
             new_background = self.generate_background(image_dir, image_names, image_bboxes)
             image_bboxes[new_background[0]].append(new_background[1])
-            final_annotations.append(new_background)
+            final_annotations[index] = new_background
+            index += 1
 
         return final_annotations
 
