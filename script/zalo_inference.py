@@ -71,9 +71,7 @@ def main(args):
             for i in range(res.shape[0]):
                 sign = img[int(res[i,1]):int(res[i,3]),
                            int(res[i,0]):int(res[i,2])]
-                # sign = cv2.cvtColor(sign, cv2.COLOR_BGR2GRAY)
                 sign = cv2.resize(sign, (128,128))/255.
-                print(sign.shape())
                 sign_tensor = torch.tensor(sign).to(device)
                 sign_tensor = sign_tensor.float().unsqueeze(0)
                 output_cls = classifier(sign_tensor)
