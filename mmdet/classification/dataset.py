@@ -6,7 +6,7 @@ import numpy as np
 from random import randint
 import json
 
-ANNOTATION_GENERATED = 1500
+ANNOTATION_GENERATED = 5000
 class SignDataset(torch.utils.data.Dataset):
 
 
@@ -22,11 +22,35 @@ class SignDataset(torch.utils.data.Dataset):
     def __getitem__(self, index):
         img_id, bbox, category = self.annotations[index]
         img = np.float32(cv2.imread(self.image_dir + str(img_id) + ".png"))
+        img_height, img_width = img.shape[0], img.shape[1]
+        x, y, w, h = bbox
+        #shift bbox
+        if category != 7:
+            shift = randint(0,1)
+            if shift == 1:
+                min_len = min(w,h)
+                for i in range(len(bbox)):
+                    change = randint(0,2)
+                    save = bbox[i]
+                    if change == 1:
+                        bbox[i] += randint(min_len // 5, min_len // 3)
+                    elif change == 2:
+                        bbox[i] -= randint(min_len // 5, min_len // 3)
+                    if bbox[i] <= 0:
+                        bbox[i] = save
+            if bbox[0] + bbox[2] > img_width or bbox[1] + bbox[3] > img_height:
+                 bbox = [x,y,w,h]
+        #crop and resize
         x, y, w, h = bbox
         sign = img[y:y+h, x:x+w]
-        sign_resized = cv2.resize(sign, (128, 128))
-        sign_resized /= 255.
-
+        sign /= 255.
+        # plt.imshow(sign)
+        # plt.show()
+        try:
+            sign_resized = cv2.resize(sign, (128, 128))
+        except:
+            print(sign.shape)
+            exit()
         return sign_resized, category 
         
 
@@ -62,7 +86,8 @@ class SignDataset(torch.utils.data.Dataset):
             img_id = int(random_image_name.split(".")[0])
             img_bboxes = image_bboxes[img_id]
             #random a bounding box
-            random_bbox = [randint(0, img_height), randint(0, img_width), randint(10, 300), randint(10, 300)]
+            side = randint(10, 150)
+            random_bbox = [randint(0, img_height), randint(0, img_width), side, side]
             valid = True
             for img_bbox in img_bboxes:
                 if (
@@ -88,31 +113,36 @@ class SignDataset(torch.utils.data.Dataset):
 
         #Get bboxes by image
         image_bboxes = {}
-        final_annotations = {}
-        index = 0
+        all_annotations = []
         for sign in sign_annotations:
-            sign_id = index
             image_id = sign["image_id"]
             bbox = sign["bbox"]
             category = sign["category_id"] - 1
             #save in final annotations
-            final_annotations[index] = [image_id, bbox, category]
+            all_annotations.append([image_id, bbox, category])
             #save bboxes for each image
             if image_id not in image_bboxes:
                 image_bboxes[image_id] = [bbox]
             else:
                 image_bboxes[image_id].append(bbox)
-            index += 1
 
         #generate background annotations
         original_len = len(sign_annotations)
+        generated_len = original_len // 7
         image_names = sorted(os.listdir(image_dir))
-        while len(final_annotations) != original_len + ANNOTATION_GENERATED:        
-            background_id = index
+        while len(all_annotations) != original_len + generated_len:        
             new_background = self.generate_background(image_dir, image_names, image_bboxes)
             image_bboxes[new_background[0]].append(new_background[1])
-            final_annotations[background_id] = new_background
-            index += 1
+            all_annotations.append(new_background)
+
+        #multiply annotations
+        final_annotations = {}
+        index = 0
+        for anno in all_annotations:
+            multiply = randint(3,5)
+            for _ in range(multiply):
+                final_annotations[index] = anno
+                index += 1
 
         return final_annotations
 
